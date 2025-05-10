@@ -1,6 +1,21 @@
+# Models and large files
 models/
-image/
-models/
+*.h5
+*.pth
+*.zip
+*.dylib
+*.so
+*.dll
+*.bin
+*.onnx
+*.pb
+*.tflite
+*.pt
+*.pkl
+*.joblib
+*.npy
+*.npz
+
 # Environment variables
 .env
 
