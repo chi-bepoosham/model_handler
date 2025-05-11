@@ -55,8 +55,9 @@ ENV/
 *.swo
 
 # Temporary files
-/var/www/temp_images/
 *.log
+
+logs/
 
 # OS
 .DS_Store
