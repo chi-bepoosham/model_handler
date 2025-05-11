@@ -1,12 +1,13 @@
 # Model Handler Service
 
-This service processes clothing images and determines body types using machine learning models. It integrates with RabbitMQ for message queuing and handles both male and female clothing analysis.
+This service processes clothing images and determines body types using machine learning models. It provides a REST API for clothing classification and body type prediction, supporting both male and female analysis.
 
 ## Features
 
+- RESTful API for clothing and body type analysis
 - Gender-specific body type analysis
-- Clothing image processing
-- Asynchronous message processing using RabbitMQ
+- Clothing image processing and classification
+- Color tone extraction
 - Support for both male and female models
 - Temporary image storage and processing
 
@@ -15,28 +16,32 @@ This service processes clothing images and determines body types using machine l
 ```
 /
 ├── .env                    # Environment variables (not in git)
-├── .env.example           # Example environment variables
-├── pyproject.toml         # Project configuration
-├── setup.py               # Minimal setup file for editable installs
-├── README.md              # Documentation
-├── main.py                # Entry point script
+├── .env.example            # Example environment variables
+├── api.py                  # Flask API implementation
+├── Dockerfile              # Docker configuration
+├── monitor_memory.py       # Memory usage monitoring utility
+├── pyproject.toml          # Project configuration
+├── README.md               # Documentation
 └── src/
     └── model_handler_service/
-        ├── __init__.py                   # Package initialization
-        ├── config.py                     # Configuration management
-        ├── load_and_predict_man.py       # Man related functions and predictors
-        ├── load_and_predict_woman.py     # Woman related functions and predictors
+        ├── __init__.py              # Package initialization
+        ├── color.py                 # Color extraction utilities
+        ├── load_and_predict_man.py  # Male model prediction functionality
+        ├── load_and_predict_woman.py# Female model prediction functionality
+        ├── test.py                  # Testing utilities
         └── core/
-            ├── __init__.py    # Core module initialization
-            ├── messaging.py   # RabbitMQ communication
-            ├── processing.py  # Image processing utilities
-            └── utils.py       # General utilities
+            ├── __init__.py        # Core module initialization
+            ├── config.py          # Configuration management
+            ├── loaders.py         # Model loading utilities
+            ├── logger.py          # Logging configuration
+            ├── processing.py      # Image processing utilities
+            └── validations.py     # Input validation utilities
 ```
 
 ## Prerequisites
 
 - Python 3.8 or higher
-- RabbitMQ Server
+- Flask
 - Docker (for containerized deployment)
 
 ## Installation
@@ -57,7 +62,6 @@ cp .env.example .env
 ```bash
 # Install the base package
 pip install -e .
-
 ```
 
 ## Configuration
@@ -65,44 +69,60 @@ pip install -e .
 The service requires the following environment variables in your `.env` file:
 
 ```
-# RabbitMQ Configuration
-RABBITMQ_USER=develop
-RABBITMQ_PASSWORD=your_password_here
-RABBITMQ_HOST=rabbitmq
-RABBITMQ_VHOST=rabbitmq
-RABBITMQ_RESPONSE_QUEUE=ai_predict_process
-
-# Image Processing Configuration
-TEMP_IMAGES_DIR=/var/www/temp_images/
-
 # Service Configuration
 DEBUG=False
 LOG_LEVEL=INFO
+
+# Image Processing Configuration
+TEMP_IMAGES_DIR=/path/to/temp/images/
 ```
 
 ## Running the Service
 
 ### Running Locally
 ```bash
-python main.py
+python api.py
 ```
 
 ### Running with Docker
 ```bash
 docker build -t model-handler-service .
-docker run -d model-handler-service
+docker run -d -p 5001:5001 model-handler-service
 ```
 
-## API Flow
+## API Endpoints
 
-1. The service listens to the RabbitMQ queue for incoming messages
-2. When a message is received, it processes the following data:
-   - User ID
-   - Gender
-   - Clothes ID
-   - Image link
-   - Action type (body_type or clothing analysis)
-3. The results are sent back to the response queue
+The service exposes two main endpoints:
+
+### 1. `/clothing` - Clothing Classification
+
+**Method**: POST
+
+**Request Body**:
+```json
+{
+    "gender": "0",  // "0" for female, "1" for male
+    "image_url": "https://example.com/image.jpg"
+}
+```
+
+**Response**:
+See the Response Formats section below.
+
+### 2. `/bodytype` - Body Type Classification
+
+**Method**: POST
+
+**Request Body**:
+```json
+{
+    "gender": "0",  // "0" for female, "1" for male
+    "image_url": "https://example.com/image.jpg"
+}
+```
+
+**Response**:
+See the Response Formats section below.
 
 ## Response Formats
 
@@ -114,8 +134,8 @@ docker run -d model-handler-service
     "ok": true,
     "data": {
         "body_type": "string"  // One of the following values:
-                               // For men: 'men_inverted_triangle', 'men_oval', 'men_rectangle'
-                               // For women: "11", "21", "31", "41", "51"
+                               // For men: "0" (Ectomorph/Slim), "2" (Mesomorph/Athletic), "5" (Endomorph/Stocky)
+                               // For women: "11" (Hourglass), "21" (Pear), "31" (Apple), "41" (Rectangle), "51" (Athletic)
     },
     "error": null
 }
@@ -148,23 +168,21 @@ docker run -d model-handler-service
 }
 ```
 
-### Body Type Values
+#### Error Response - Image Download Failed
+```json
+{
+    "ok": false,
+    "data": null,
+    "error": {
+        "code": "IMAGE_DOWNLOAD_FAILED",
+        "message": "Failed to download image from provided URL"
+    }
+}
+```
 
-#### Male Body Types
-- "0": Ectomorph (Slim)
-- "2": Mesomorph (Athletic)
-- "5": Endomorph (Stocky)
+### Clothing Image Processing Response
 
-#### Female Body Types
-- "11": Hourglass
-- "21": Pear
-- "31": Apple
-- "41": Rectangle
-- "51": Athletic
-
-### Woman's Clothing Image Processing Response
-
-#### Success Response
+#### Success Response for Women's Clothing
 ```json
 {
     "ok": true,
@@ -191,22 +209,18 @@ docker run -d model-handler-service
         "skirt_and_pants": "string",      // "pants" or "skirt"
         "skirt_print": "string",          // One of: "skirtamudi", "skirtdorosht", "skirtofoghi", 
                                         // "skirtriz", "skirtsade"
-        "skirt_type": "string"            // One of: "alineskirt", "balloonskirt", "mermaidskirt", 
+        "skirt_type": "string",           // One of: "alineskirt", "balloonskirt", "mermaidskirt", 
                                         // "miniskirt", "pencilskirt", "shortaskirt", "wrapskirt"
+                                        
+        // Six model predictions (for upper body clothing)
+        "balted": "string",      // "balted" or "notbalted"
+        "cowl": "string",        // "cowl" or "notcowl"
+        "empire": "string",      // "empire" or "notempire"
+        "loose": "string",       // "losse" or "snatched"
+        "wrap": "string",        // "notwrap" or "wrap"
+        "peplum": "string"       // "notpeplum" or "peplum"
     },
     "error": null
-}
-```
-
-#### Error Response - Image Load Error
-```json
-{
-    "ok": false,
-    "data": null,
-    "error": {
-        "code": "IMAGE_LOAD_ERROR",
-        "message": "Failed to load image file"
-    }
 }
 ```
 
@@ -225,36 +239,22 @@ docker run -d model-handler-service
 }
 ```
 
-#### Error Response - Image Download Failed
-
-
-
-### Six Model Predictions Response
-
-When the initial prediction fails, the service falls back to six model predictions:
-
-```json
-{
-    "balted": "string",      // "balted" or "notbalted"
-    "cowl": "string",        // "cowl" or "notcowl"
-    "empire": "string",      // "empire" or "notempire"
-    "loose": "string",       // "losse" or "snatched"
-    "wrap": "string",        // "notwrap" or "wrap"
-    "peplum": "string"       // "notpeplum" or "peplum"
-}
-```
-
 ## Development
 
 ### Project Architecture
 
 The service is structured following a modular approach:
 
-- **config.py**: Loads and validates environment variables
-- **core/messaging.py**: Handles RabbitMQ communication
+- **api.py**: Flask API endpoints for clothing and body type classification
+- **color.py**: Color extraction and analysis utilities
+- **load_and_predict_man.py**: Male-specific clothing and body type prediction
+- **load_and_predict_woman.py**: Female-specific clothing and body type prediction
+- **core/config.py**: Loads and validates environment variables
+- **core/loaders.py**: Handles model loading functions
+- **core/logger.py**: Configures logging for the application
 - **core/processing.py**: Contains image processing utilities
-- **core/utils.py**: Provides common utility functions
+- **core/validations.py**: Input validation functions
 
 ### Adding New Models
 
-To add new models, place them in the appropriate directory and update the main processing functions.
+To add new models, place them in the appropriate directory and update the relevant prediction functions in the processing modules.
