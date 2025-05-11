@@ -15,18 +15,19 @@ authors = [
 dependencies = [
     "redis==5.2.1",
     "datetime==5.5",
-    "tensorflow",
-    "torch",
-    "torchvision",
+    "tensorflow==2.18.0",
+    "torch==2.6.0",
+    "torchvision==0.21.0",
     "numpy",
-    "ultralytics",
-    "opencv-python",
+    "ultralytics==8.3.86",
+    "opencv-python==4.11.0.86",
     "pillow",
     "requests",
     "python-dotenv>=1.0.0",
-    "scikit-learn",
-    "mediapipe",
-    "flask"
+    "scikit-learn==1.6.1",
+    "mediapipe==0.10.21",
+    "Flask==3.1.0",
+    "segment-anything==1.0"
 ]
 classifiers = [
     'Development Status :: 3 - Alpha',

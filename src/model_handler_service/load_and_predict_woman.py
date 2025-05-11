@@ -4,7 +4,7 @@ import time
 from model_handler_service.core.loaders import load_model, predict_class, yolo_predict_crop
 from model_handler_service.core.config import config
 from model_handler_service.core.logger import model_logger
-# from model_handler_service.color import get_color_tone
+from model_handler_service.color import get_color_tone
 import torch
 
 # Define model paths using the MODEL_PATH from config
@@ -126,7 +126,7 @@ def process_woman_clothing_image(image_path):
 
     # 2. General Predictions (Independent of clothing type)
     # Predict color tone
-    # results["color_tone"] = get_color_tone(image)
+    results["color_tone"] = get_color_tone(image_path)
     print(f"Color tone prediction: {results.get('color_tone')}")
 
     # Predict clothing type (paintane)

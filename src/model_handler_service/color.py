@@ -1,22 +1,47 @@
 import cv2
 import numpy as np
-from sklearn.cluster import KMeans
+import torch
+import time
+import os
+from ultralytics import YOLO
+from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from colorsys import rgb_to_hls
+from sklearn.cluster import KMeans
+from model_handler_service.core.logger import model_logger
+from model_handler_service.core.config import config
 
 
-# for Docker
-# model_mnist_path = '/var/www/deploy/models/under_over/under_over_mobilenet_final.h5'
-# model_sam = '/var/www/deploy/models/under_over/sam_vit_b_01ec64.pth'
+# Initialize device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model_logger.info(f"Using device for color analysis: {device}")
 
-# For Local
-# base_path = os.path.dirname(__file__)
-# model_detect_clothes = os.path.join(base_path, '../../models/validations/clothes/detect_clothes.pt')
-# model_sam = os.path.join(base_path, '../../models/validations/clothes/sam_vit_b_01ec64.pth')
+# Define model paths using the MODEL_PATH from config
+# This will use the path defined in the .env file
+model_path = str(config.get_model_file_path('validations/clothes/detect_clothes.pt'))
+sam_checkpoint = str(config.get_model_file_path('color/sam_vit_b_01ec64.pth'))
 
-# model = YOLO(model_detect_clothes)
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# sam = sam_model_registry["vit_h"](checkpoint=model_sam).to(device)
-# mask_generator = SamAutomaticMaskGenerator(sam)
+# Load models
+model_logger.info("Starting to load color analysis models")
+start_time = time.time()
+
+try:
+    # Load YOLO model for clothing detection
+    model_logger.info(f"Loading YOLO model from: {os.path.basename(model_path)}")
+    model = YOLO(model_path)
+    
+    # Load SAM model for segmentation
+    model_type="vit_b"
+    model_logger.info(f"Loading SAM model from: {os.path.basename(sam_checkpoint)}")
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint).to(device)
+    
+    # Initialize mask generator
+    mask_generator = SamAutomaticMaskGenerator(sam)
+    
+    total_time = time.time() - start_time
+    model_logger.info(f"Successfully loaded all color analysis models in {total_time:.2f} seconds")
+except Exception as e:
+    model_logger.error(f"Failed to load color analysis models: {str(e)}")
+    raise
 
 
 def detect_clothing(image_path):
@@ -44,7 +69,7 @@ def segment_clothing(image_path, bbox):
 
     if len(masks) == 0:
         print("⚠️ No mask found! Using bounding box as mask.")
-        return cropped_img  
+        return cropped_img, None  
 
     largest_mask = max(masks, key=lambda x: np.sum(x["segmentation"]))
     mask = largest_mask["segmentation"]
@@ -52,7 +77,7 @@ def segment_clothing(image_path, bbox):
     segmented_img = np.zeros_like(cropped_img)
     segmented_img[mask] = cropped_img[mask]
 
-    return segmented_img
+    return segmented_img, cropped_img 
 
 
 def extract_dominant_color(image, k=3):
@@ -60,13 +85,25 @@ def extract_dominant_color(image, k=3):
         print("⚠️ Segmented image is invalid!")
         return np.array([0, 0, 0])  
 
+    model_logger.info(f"Extracting dominant color from image of shape {image.shape}")
+
     image = cv2.resize(image, (100, 100))
     image = image.reshape((-1, 3))
 
     kmeans = KMeans(n_clusters=k, n_init=10)
     kmeans.fit(image)
-    
-    dominant_color = kmeans.cluster_centers_[np.argmax(np.bincount(kmeans.labels_))]
+
+    labels = kmeans.labels_
+    bin_counts = np.bincount(labels)
+    dominant_label = np.argmax(bin_counts)
+
+    model_logger.info(f"KMeans labels: {labels}")
+    model_logger.info(f"Bin counts: {bin_counts}")
+    model_logger.info(f"Dominant label: {dominant_label}")
+
+    dominant_color = kmeans.cluster_centers_[dominant_label]
+
+    model_logger.info(f"Dominant color: {dominant_color}")
 
     return dominant_color.astype(int)
 
@@ -102,16 +139,14 @@ def get_color_tone(image_path):
         return
 
     bbox = detections[0]
-    segmented_image = segment_clothing(image_path, bbox)
+    _, cropped_img = segment_clothing(image_path, bbox)
 
-    dominant_color = extract_dominant_color(segmented_image)
+    dominant_color = extract_dominant_color(cropped_img)
 
     if np.all(dominant_color == 0):
         print("⚠️ No dominant color detected!")
         return
 
     color_category = classify_color(dominant_color)
-
-    print(f"🚀 Main Color: {dominant_color}  🎨 Classification: {color_category}")
 
     return color_category

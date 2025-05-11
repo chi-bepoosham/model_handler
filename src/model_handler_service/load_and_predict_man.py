@@ -6,7 +6,7 @@ from model_handler_service.core.processing import preprocess_image_for_bodytype
 from model_handler_service.core.validations import validate_human_image
 from model_handler_service.core.config import config
 from model_handler_service.core.logger import model_logger
-# from model_handler_service.color import get_color_tone
+from model_handler_service.color import get_color_tone
 
 # Define model paths using the MODEL_PATH from config
 # This will use the path defined in the .env file
@@ -106,7 +106,7 @@ def process_clothing_image(img_path):
 
     # 2. General Predictions (Independent of clothing type)
     # Predict color tone
-    # results["color_tone"] = get_color_tone(img)
+    results["color_tone"] = get_color_tone(img_path)
     print(f"Color tone prediction: {results.get('color_tone')}")
 
     # Predict clothing type (paintane or balatane)
