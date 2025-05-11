@@ -4,8 +4,8 @@ FROM nvidia/cuda:11.2.2-base-ubuntu20.04
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
-    TEMP_IMAGES_DIR=/app/temp_images \
-    MODEL_PATH=/app/models \
+    TEMP_IMAGES_DIR=temp_images \
+    MODEL_PATH=/../data-models \
     PYTHONPATH=/app
 
 # Create working directory
@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create necessary directories
-RUN mkdir -p /app/temp_images
+RUN mkdir -p temp_images
 
 # Copy requirements first to leverage Docker cache
 COPY pyproject.toml /app/
@@ -50,7 +50,7 @@ COPY . /app/
 
 # Create a non-root user to run the application
 RUN groupadd -r appuser && useradd -r -g appuser appuser && \
-    chown -R appuser:appuser /app/temp_images
+    chown -R appuser:appuser temp_images
 
 # Switch to non-root user
 USER appuser
