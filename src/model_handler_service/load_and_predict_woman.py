@@ -1,83 +1,73 @@
 import os
 import cv2
+import time
 from model_handler_service.core.loaders import load_model, predict_class, yolo_predict_crop
+from model_handler_service.core.config import config
+from model_handler_service.core.logger import model_logger
 # from model_handler_service.color import get_color_tone
 import torch
-# Define model paths
-# For Docker
-# model_astin_path = '/var/www/deploy/models/astin/astinwoman.h5'
-# model_patern_path = '/var/www/deploy/models/pattern/petternwoman.h5'
-# model_paintane_path = '/var/www/deploy/models/paintane/zan.h5'
-# model_rise_path = '/var/www/deploy/models/rise/riseeeeef.h5'
-# model_shalvar_path = '/var/www/deploy/models/shalvar/womenpants.h5'
-# model_tarh_shalvar_path = '/var/www/deploy/models/tarh_shalvar/wwpantsprint.h5'
-# model_skirt_pants_path = '/var/www/deploy/models/skirt_pants/skirt_pants.h5'
-# model_yaghe_path = '/var/www/deploy/models/yaghe/yaghewoman101A.h5'
-# model_skirt_print_path = '/var/www/deploy/models/skirt_print/skirt_print.h5'
-# model_skirt_type_path = '/var/www/deploy/models/skirt_type/skirttt_types.h5'
-# model_mnist_path = '/var/www/deploy/models/under_over/under_over_mobilenet_final.h5'
-# model_body_type_path = '/var/www/deploy/models/body_type/models/woman_body_type.h5'
-# model_yolo_path = '/var/www/deploy/models/yolo/best.pt'
-# model_balted_path = '/var/www/deploy/models/6model/belted.h5'
-# model_cowl_path = '/var/www/deploy/models/6model/cowl.h5'
-# model_empire_path = '/var/www/deploy/models/6model/empire.h5'
-# model_loose_path = '/var/www/deploy/models/6model/loose.h5'
-# model_peplum_path = '/var/www/deploy/models/6model/peplum.h5'
-# model_wrap_path = '/var/www/deploy/models/6model/wrap.h5'
 
-# For Local
-print("_____________________________chibepoosham_____________________________")
-print("define  models path")
-print("_____________________________chibepoosham_____________________________")
+# Define model paths using the MODEL_PATH from config
+# This will use the path defined in the .env file
 
-base_path = os.path.dirname(__file__)
-model_astin_path = os.path.join(base_path, "../../models/astin/astinwoman.h5")
-model_patern_path = os.path.join(base_path, "../../models/pattern/petternwoman.h5")
-model_paintane_path = os.path.join(base_path, "../../models/paintane/p_t_b_woman_1Mar_10_45.h5")  
-model_rise_path = os.path.join(base_path, "../../models/rise/riseeeeef.h5") 
-model_shalvar_path = os.path.join(base_path, "../../models/shalvar/womenpants.h5")
-model_tarh_shalvar_path = os.path.join(base_path, "../../models/tarh_shalvar/wwpantsprint.h5")
-model_skirt_pants_path = os.path.join(base_path, "../../models/skirt_pants/skirt_pants.h5")  
-model_yaghe_path = os.path.join(base_path, "../../models/yaghe/yaghewoman101A.h5")
-model_skirt_print_path = os.path.join(base_path, "../../models/skirt_print/skirt_print.h5")
-model_skirt_type_path = os.path.join(base_path, "../../models/skirt_type/skirttt_types.h5") 
-model_mnist_path = os.path.join(base_path, "../../models/under_over/under_over_mobilenet_final.h5")
-model_body_type_path = os.path.join(base_path, "../../models/body_type/model_women.pt")
-model_yolo_path = os.path.join(base_path, "../../models/yolo/best.pt")
-# six model
-model_balted_path = os.path.join(base_path, "../../models/6model/belted.h5")
-model_cowl_path = os.path.join(base_path, "../../models/6model/cowl.h5")
-model_empire_path = os.path.join(base_path, "../../models/6model/empire.h5")
-model_loose_path = os.path.join(base_path, "../../models/6model/loose.h5")
-model_peplum_path = os.path.join(base_path, "../../models/6model/peplum.h5")
-model_wrap_path = os.path.join(base_path, "../../models/6model/wrap.h5")
+# Women's clothing models
+model_astin_path = str(config.get_model_file_path('astin/astinwoman.h5'))
+model_patern_path = str(config.get_model_file_path('pattern/petternwoman.h5'))
+model_paintane_path = str(config.get_model_file_path('paintane/p_t_b_woman_1Mar_10_45.h5'))
+model_rise_path = str(config.get_model_file_path('rise/riseeeeef.h5'))
+model_shalvar_path = str(config.get_model_file_path('shalvar/womenpants.h5'))
+model_tarh_shalvar_path = str(config.get_model_file_path('tarh_shalvar/wwpantsprint.h5'))
+model_skirt_pants_path = str(config.get_model_file_path('skirt_pants/skirt_pants.h5'))
+model_yaghe_path = str(config.get_model_file_path('yaghe/yaghewoman101A.h5'))
+model_skirt_print_path = str(config.get_model_file_path('skirt_print/skirt_print.h5'))
+model_skirt_type_path = str(config.get_model_file_path('skirt_type/skirttt_types.h5'))
+model_mnist_path = str(config.get_model_file_path('under_over/under_over_mobilenet_final.h5'))
+model_body_type_path = str(config.get_model_file_path('body_type/model_women.pt'))
+model_yolo_path = str(config.get_model_file_path('yolo/best.pt'))
 
-print("start loading models")
-print("_____________________________chibepoosham_____________________________")
+# Six model paths
+model_balted_path = str(config.get_model_file_path('6model/belted.h5'))
+model_cowl_path = str(config.get_model_file_path('6model/cowl.h5'))
+model_empire_path = str(config.get_model_file_path('6model/empire.h5'))
+model_loose_path = str(config.get_model_file_path('6model/loose.h5'))
+model_peplum_path = str(config.get_model_file_path('6model/peplum.h5'))
+model_wrap_path = str(config.get_model_file_path('6model/wrap.h5'))
 
 # Load models globally
-model_astin = load_model(model_astin_path, class_num=6, base_model="resnet101")
-model_patern = load_model(model_patern_path, class_num=5, base_model="resnet101")
-model_paintane = load_model(model_paintane_path, class_num=3, base_model="mobilenet-v2-pt")
-model_rise = load_model(model_rise_path, class_num=2, base_model="resnet152_600")
-model_shalvar = load_model(model_shalvar_path, class_num=8, base_model="resnet101")
-model_tarh_shalvar = load_model(model_tarh_shalvar_path, class_num=5, base_model="resnet101")
-model_skirt_pants = load_model(model_skirt_pants_path, class_num=2, base_model="resnet101")
-model_yaghe = load_model(model_yaghe_path, class_num=11, base_model="resnet101")
-model_skirt_print = load_model(model_skirt_print_path, class_num=5, base_model="resnet101_30_unit")
-model_skirt_type = load_model(model_skirt_type_path, class_num=7, base_model="resnet101_30_unit")
-model_mnist = load_model(model_mnist_path, class_num=2, base_model="mobilenet-v2")
-model_body_type = torch.load(model_body_type_path,map_location=torch.device('cpu'))  # Load PyTorch model body type (arian)
-model_yolo = load_model(model_yolo_path, class_num=2, base_model="yolo")
-model_balted = load_model(model_balted_path, class_num=2, base_model="resnet101")
-model_cowl = load_model(model_cowl_path, class_num=2, base_model="resnet101")
-model_empire = load_model(model_empire_path, class_num=2, base_model="resnet101")
-model_loose = load_model(model_loose_path, class_num=2, base_model="resnet101")
-model_peplum = load_model(model_peplum_path, class_num=2, base_model="resnet101")
-model_wrap = load_model(model_wrap_path, class_num=2, base_model="resnet101")
+model_logger.info("Starting to load all women's clothing models")
+start_time = time.time()
 
-print("load models is completed ")
-print("_____________________________chibepoosham_____________________________")
+try:
+    model_astin = load_model(model_astin_path, class_num=6, base_model="resnet101")
+    model_patern = load_model(model_patern_path, class_num=5, base_model="resnet101")
+    model_paintane = load_model(model_paintane_path, class_num=3, base_model="mobilenet-v2-pt")
+    model_rise = load_model(model_rise_path, class_num=2, base_model="resnet152_600")
+    model_shalvar = load_model(model_shalvar_path, class_num=8, base_model="resnet101")
+    model_tarh_shalvar = load_model(model_tarh_shalvar_path, class_num=5, base_model="resnet101")
+    model_skirt_pants = load_model(model_skirt_pants_path, class_num=2, base_model="resnet101")
+    model_yaghe = load_model(model_yaghe_path, class_num=11, base_model="resnet101")
+    model_skirt_print = load_model(model_skirt_print_path, class_num=5, base_model="resnet101_30_unit")
+    model_skirt_type = load_model(model_skirt_type_path, class_num=7, base_model="resnet101_30_unit")
+    model_mnist = load_model(model_mnist_path, class_num=2, base_model="mobilenet-v2")
+    
+    model_logger.info("Loading PyTorch body type model")
+    model_body_type = torch.load(model_body_type_path, map_location=torch.device('cpu'))  # Load PyTorch model body type (arian)
+    
+    model_yolo = load_model(model_yolo_path, class_num=2, base_model="yolo")
+    model_balted = load_model(model_balted_path, class_num=2, base_model="resnet101")
+    model_cowl = load_model(model_cowl_path, class_num=2, base_model="resnet101")
+    model_empire = load_model(model_empire_path, class_num=2, base_model="resnet101")
+    model_loose = load_model(model_loose_path, class_num=2, base_model="resnet101")
+    model_peplum = load_model(model_peplum_path, class_num=2, base_model="resnet101")
+    model_wrap = load_model(model_wrap_path, class_num=2, base_model="resnet101")
+    
+    total_time = time.time() - start_time
+    model_logger.info(f"Successfully loaded all women's clothing models in {total_time:.2f} seconds")
+except Exception as e:
+    model_logger.error(f"Failed to load women's clothing models: {str(e)}")
+    raise
+
+
 def process_woman_clothing_image(image_path):
     """
     Processes a woman's clothing image to predict various attributes such as color tone,
@@ -216,9 +206,6 @@ def process_woman_clothing_image(image_path):
                                              class_names=["alineskirt", "balloonskirt", "mermaidskirt", "miniskirt", "pencilskirt", "shortaskirt", "wrapskirt"], 
                                              reso=300, model_name="model_skirt_type")
         print(f"Skirt type prediction: {results.get('skirt_type')}")
-    
-    print("Returning results:")
-    print(results)
     
     response["data"] = results
     return response

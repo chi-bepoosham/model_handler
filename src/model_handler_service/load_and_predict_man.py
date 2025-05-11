@@ -1,51 +1,51 @@
 import os
 import cv2
+import time
 from model_handler_service.core.loaders import load_model, predict_class, yolo_predict_crop
 from model_handler_service.core.processing import preprocess_image_for_bodytype
 from model_handler_service.core.validations import validate_human_image
+from model_handler_service.core.config import config
+from model_handler_service.core.logger import model_logger
 # from model_handler_service.color import get_color_tone
 
+# Define model paths using the MODEL_PATH from config
+# This will use the path defined in the .env file
 
-# Define model paths
-# For Docker
-# model_astin_path = '/var/www/deploy/models/astin/astinman.h5'
-# model_patern_path = '/var/www/deploy/models/patern/petternman.h5'
-# model_paintane_path = '/var/www/deploy/models/paintane/mard.h5'
-# model_rise_path = '/var/www/deploy/models/rise/riseeeeef.h5'
-# model_shalvar_path = '/var/www/deploy/models/shalvar/menpants.h5'
-# model_mnist_path = '/var/www/deploy/models/fasionmnist/mnist.h5'
-# model_tarh_shalvar_path = '/var/www/deploy/models/tarh_shalvar/mmpantsprint.h5'
-# model_skirt_pants_path = '/var/www/deploy/models/skirt_pants/skirt_pants.h5'
-# model_yaghe_path = '/var/www/deploy/models/yaghe/neckline_classifier_mobilenet.h5'
-# model_yolo = '/var/www/deploy/models/yolo/best.pt'
-# model_body_type_path = '/var/www/deploy/models/body_type/models/model_body_type.pth'
-
-# For Local
-base_path = os.path.dirname(__file__)
-model_astin_path = os.path.join(base_path, '../../models/astin/astinman.h5')
-model_patern_path = os.path.join(base_path, '../../models/pattern/petternman.h5')
-model_paintane_path = os.path.join(base_path, '../../models/paintane/mard.h5')
-model_rise_path = os.path.join(base_path, '../../models/rise/riseeeeef.h5')
-model_shalvar_path = os.path.join(base_path, '../../models/shalvar/menpants.h5')
-model_mnist_path = os.path.join(base_path, '../../models/under_over/under_over_mobilenet_final.h5')
-model_tarh_shalvar_path = os.path.join(base_path, '../../models/tarh_shalvar/mmpantsprint.h5')
-model_skirt_pants_path = os.path.join(base_path, '../../models/skirt_pants/skirt_pants.h5')
-model_yaghe_path = os.path.join(base_path, '../../models/yaghe/neckline_classifier_mobilenet.h5')
-model_yolo_path = os.path.join(base_path, '../../models/yolo/best.pt')
-model_body_type_path = os.path.join(base_path, '../../models/body_type/model_body_type.pth')
+# Men's clothing models
+model_astin_path = str(config.get_model_file_path('astin/astinman.h5'))
+model_patern_path = str(config.get_model_file_path('pattern/petternman.h5'))
+model_paintane_path = str(config.get_model_file_path('paintane/mard.h5'))
+model_rise_path = str(config.get_model_file_path('rise/riseeeeef.h5'))
+model_shalvar_path = str(config.get_model_file_path('shalvar/menpants.h5'))
+model_mnist_path = str(config.get_model_file_path('under_over/under_over_mobilenet_final.h5'))
+model_tarh_shalvar_path = str(config.get_model_file_path('tarh_shalvar/mmpantsprint.h5'))
+model_skirt_pants_path = str(config.get_model_file_path('skirt_pants/skirt_pants.h5'))
+model_yaghe_path = str(config.get_model_file_path('yaghe/neckline_classifier_mobilenet.h5'))
+model_yolo_path = str(config.get_model_file_path('yolo/best.pt'))
+model_body_type_path = str(config.get_model_file_path('body_type/model_body_type.pth'))
 
 # Load models globally
-model_astin = load_model(model_astin_path, class_num=3, base_model="resnet101")
-model_patern = load_model(model_patern_path, class_num=5, base_model="resnet101")
-model_paintane = load_model(model_paintane_path, class_num=2, base_model="mobilenet")
-model_rise = load_model(model_rise_path, class_num=2, base_model="resnet152_600")
-model_shalvar = load_model(model_shalvar_path, class_num=7, base_model="resnet101")
-model_mnist = load_model(model_mnist_path, class_num=2, base_model="mobilenet-v2")
-model_tarh_shalvar = load_model(model_tarh_shalvar_path, class_num=5, base_model="resnet101")
-model_skirt_pants = load_model(model_skirt_pants_path, class_num=2, base_model="resnet101")
-model_yaghe = load_model(model_yaghe_path, class_num=5, base_model="mobilenet-v2-softmax")
-model_yolo = load_model(model_yolo_path, class_num=2, base_model="yolo")
-model_body_type = load_model(model_body_type_path, class_num=3, base_model="bodytype")
+model_logger.info("Starting to load all men's clothing models")
+start_time = time.time()
+
+try:
+    model_astin = load_model(model_astin_path, class_num=3, base_model="resnet101")
+    model_patern = load_model(model_patern_path, class_num=5, base_model="resnet101")
+    model_paintane = load_model(model_paintane_path, class_num=2, base_model="mobilenet")
+    model_rise = load_model(model_rise_path, class_num=2, base_model="resnet152_600")
+    model_shalvar = load_model(model_shalvar_path, class_num=7, base_model="resnet101")
+    model_mnist = load_model(model_mnist_path, class_num=2, base_model="mobilenet-v2")
+    model_tarh_shalvar = load_model(model_tarh_shalvar_path, class_num=5, base_model="resnet101")
+    model_skirt_pants = load_model(model_skirt_pants_path, class_num=2, base_model="resnet101")
+    model_yaghe = load_model(model_yaghe_path, class_num=5, base_model="mobilenet-v2-softmax")
+    model_yolo = load_model(model_yolo_path, class_num=2, base_model="yolo")
+    model_body_type = load_model(model_body_type_path, class_num=3, base_model="bodytype")
+    
+    total_time = time.time() - start_time
+    model_logger.info(f"Successfully loaded all men's clothing models in {total_time:.2f} seconds")
+except Exception as e:
+    model_logger.error(f"Failed to load men's clothing models: {str(e)}")
+    raise
 
 
 def process_clothing_image(img_path):

@@ -3,14 +3,17 @@ import requests
 import time
 import random
 import os
-from model_handler_service.config import config
+
+
 from model_handler_service.load_and_predict_man import process_clothing_image, get_man_body_type
 from model_handler_service.load_and_predict_woman import process_woman_clothing_image, process_six_model_predictions, get_body_type_female
-
-app = Flask(__name__)
+from model_handler_service.core.config import config
 
 # Temporary directory for storing images
 TEMP_IMAGES_DIR = config.get_temp_dir()
+
+app = Flask(__name__)
+
 
 def download_image(image_url):
     """Downloads an image from the given URL and saves it in the temporary directory."""
