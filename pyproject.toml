@@ -13,7 +13,6 @@ authors = [
     {name = "Chi Bepoosham!", email = "xxxxx@chibepoosham.com"},
 ]
 dependencies = [
-    "redis==5.2.1",
     "datetime==5.5",
     "tensorflow==2.18.0",
     "torch==2.6.0",
@@ -43,8 +42,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/chi-bepoosham/model_handler_service"
-Repository = "https://github.com/chi-bepoosham/model_handler_service"
+Homepage = "https://github.com/chi-bepoosham/model_handler"
+Repository = "https://github.com/chi-bepoosham/model_handler"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
