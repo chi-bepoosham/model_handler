@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.2.2-base-ubuntu20.04
+FROM python:3.10-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -8,11 +8,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     MODEL_PATH=/../data-models \
     PYTHONPATH=/app
 
-# Create working directory
+# Set working directory
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1 \
     libjpeg-dev \
@@ -30,30 +30,29 @@ RUN apt-get update && apt-get install -y \
     gfortran \
     libgl1-mesa-glx \
     libglib2.0-0 \
-    python3-pip \
     python3-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Create necessary directories
-RUN mkdir -p temp_images
+RUN mkdir -p /app/temp_images
 
 # Copy requirements first to leverage Docker cache
 COPY pyproject.toml /app/
 
 # Install Python dependencies
-RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip3 install --no-cache-dir -e .
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -e .
 
 # Copy application code
 COPY . /app/
 
-# Create a non-root user to run the application
-RUN groupadd -r appuser && useradd -r -g appuser appuser && \
-    chown -R appuser:appuser temp_images
+# Create a non-root user
+RUN adduser --disabled-password --gecos '' appuser \
+    && chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
 
 # Command to run the application
-CMD ["python3", "api.py"]
+CMD ["python", "api.py"]
