@@ -1,4 +1,5 @@
-FROM python:3.10-slim
+FROM --platform=linux/amd64 python:3.10-slim
+
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -42,7 +43,7 @@ RUN mkdir -p /app/temp_images
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -e .
+    && pip install --no-cache-dir --only-binary=:all: -e .
 
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser \
