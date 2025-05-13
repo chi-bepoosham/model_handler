@@ -34,18 +34,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy application code
+COPY . /app/
+
 # Create necessary directories
 RUN mkdir -p /app/temp_images
-
-# Copy requirements first to leverage Docker cache
-COPY pyproject.toml /app/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -e .
-
-# Copy application code
-COPY . /app/
 
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser \
