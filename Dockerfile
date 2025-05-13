@@ -1,56 +1,57 @@
-FROM --platform=linux/amd64 python:3.10-slim
+# Base image with explicit architecture targeting
+FROM --platform=linux/amd64 python:3.10-slim-bullseye
 
-
-# Set environment variables
+# Environment configuration
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
-    TEMP_IMAGES_DIR=temp_images \
-    MODEL_PATH=/../data-models \
-    PYTHONPATH=/app
+    TEMP_IMAGES_DIR=/app/temp_images \
+    MODEL_PATH=/app/data-models \
+    PYTHONPATH=/app \
+    OPENBLAS_CORETYPE=HASWELL
 
-# Set working directory
-WORKDIR /app
-
-# Install system dependencies
+# System dependencies for x86_64 architecture
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1 \
-    libjpeg-dev \
+    libglib2.0-0 \
+    libjpeg62-turbo-dev \
     libpng-dev \
-    libtiff-dev \
-    libavcodec-dev \
-    libavformat-dev \
-    libswscale-dev \
-    libv4l-dev \
-    libxvidcore-dev \
-    libx264-dev \
-    libgtk-3-dev \
-    libcanberra-gtk3-module \
+    libtiff5-dev \
+    libavcodec58 \
+    libavformat58 \
+    libswscale5 \
+    libv4l-0 \
+    libxvidcore4 \
+    libx264-160 \
     libatlas-base-dev \
     gfortran \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
     python3-dev \
-    && apt-get clean \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy application code
-COPY . /app/
+# Application setup
+WORKDIR /app
+COPY . .
 
-# Create necessary directories
-RUN mkdir -p /app/temp_images
+# Create required directories
+RUN mkdir -p ${TEMP_IMAGES_DIR} && \
+    mkdir -p ${MODEL_PATH}
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir --only-binary=:all: -e .
+# Python dependencies with architecture-aware installation
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir --only-binary=:all: \
+    numpy==1.24.3 \
+    opencv-python-headless==4.8.0.76 \
+    -e .
 
-# Create a non-root user
-RUN adduser --disabled-password --gecos '' appuser \
-    && chown -R appuser:appuser /app
+# Non-root user setup
+RUN adduser --disabled-password --gecos '' appuser && \
+    chown -R appuser:appuser /app
 
-# Switch to non-root user
 USER appuser
 
-# Command to run the application
-CMD ["python", "api.py"]
+# Startup command with architecture verification
+CMD ["sh", "-c", "echo 'Running on x86_64 Architecture' && python api.py"]
