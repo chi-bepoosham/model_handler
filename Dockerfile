@@ -42,7 +42,7 @@ RUN mkdir -p ${TEMP_IMAGES_DIR} && \
 
 # Install Python dependencies using binary wheels
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --prefer-binary .
+    pip install --no-cache-dir --no-binary==numpy .
 
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
