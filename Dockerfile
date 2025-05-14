@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     TEMP_IMAGES_DIR=/app/temp_images \
     MODEL_PATH=/app/data-models \
     PYTHONPATH=/app \
-    OPENBLAS_CORETYPE=HASWELL
+    OPENBLAS_CORETYPE=generic
 
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
