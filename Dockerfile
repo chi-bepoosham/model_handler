@@ -38,6 +38,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 RUN adduser --disabled-password --gecos '' appuser && \
     chown -R appuser:appuser /app
 
+
 USER appuser
 
 # Run the application
