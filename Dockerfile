@@ -1,5 +1,5 @@
-# Base image with explicit architecture targeting
-FROM --platform=linux/amd64 python:3.10-slim-bullseye
+# Base image with Python 3.9 and explicit architecture targeting for x86_64
+FROM --platform=linux/amd64 python:3.9-slim-bullseye
 
 # Environment configuration
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -10,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     OPENBLAS_CORETYPE=HASWELL
 
-# System dependencies for x86_64 architecture
+# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1 \
@@ -40,18 +40,15 @@ COPY . .
 RUN mkdir -p ${TEMP_IMAGES_DIR} && \
     mkdir -p ${MODEL_PATH}
 
-# Python dependencies with architecture-aware installation
+# Install Python dependencies using binary wheels
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --only-binary=:all: \
-    numpy==1.24.3 \
-    opencv-python-headless==4.8.0.76 \
-    -e .
+    pip install --no-cache-dir --prefer-binary .
 
-# Non-root user setup
+# Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
     chown -R appuser:appuser /app
 
 USER appuser
 
-# Startup command with architecture verification
-CMD ["sh", "-c", "echo 'Running on x86_64 Architecture' && python api.py"]
+# Run the application
+CMD ["sh", "-c", "echo 'Running on x86_64 with Python 3.9' && python api.py"]
