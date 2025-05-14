@@ -50,7 +50,8 @@ class Config:
     # Required environment variables
     REQUIRED_VARS = [
         'TEMP_IMAGES_DIR',
-        'MODEL_PATH'
+        'MODEL_PATH',
+        'LOGS_PATH' 
     ]
 
     def __init__(self):
@@ -96,6 +97,15 @@ class Config:
         except ConfigurationError as e:
             raise ConfigurationError(f"Failed to resolve MODEL_PATH: {str(e)}")
 
+        # Resolve logs path
+        logs_path = os.getenv('LOGS_PATH')
+        if not logs_path:
+            raise ConfigurationError("LOGS_PATH environment variable is not set")
+        try:
+            self.logs_path = resolve_path(logs_path)
+        except ConfigurationError as e:
+            raise ConfigurationError(f"Failed to resolve LOGS_PATH: {str(e)}")
+
         # Ensure temp images directory exists and is writable
         try:
             self.temp_images_dir.mkdir(parents=True, exist_ok=True)
@@ -130,7 +140,8 @@ class Config:
         """Convert configuration to dictionary."""
         return {
             'temp_images_dir': str(self.temp_images_dir),
-            'model_path': str(self.model_path)
+            'model_path': str(self.model_path),
+            'logs_path': str(self.logs_path) 
         }
 
 # Create a global configuration instance

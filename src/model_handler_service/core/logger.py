@@ -3,10 +3,10 @@ import os
 import time
 from functools import wraps
 from datetime import datetime
+from model_handler_service.core.config import config
 
 # Create logs directory if it doesn't exist
-log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
-os.makedirs(log_dir, exist_ok=True)
+log_dir = config.logs_path
 
 # Configure the root logger
 logging.basicConfig(
