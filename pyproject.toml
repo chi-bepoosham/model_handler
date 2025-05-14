@@ -17,7 +17,7 @@ dependencies = [
     "tensorflow==2.18.0",
     "torch==2.6.0",
     "torchvision==0.21.0",
-    "numpy==1.24.3",
+    "numpy==1.26.0",
     "ultralytics==8.3.86",
     "opencv-python-headless==4.8.0.76",  # headless to avoid GUI deps
     "pillow",
