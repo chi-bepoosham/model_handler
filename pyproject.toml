@@ -14,12 +14,12 @@ authors = [
 ]
 dependencies = [
     "datetime==5.5",
-    "tensorflow==2.18.0",
-    "torch==2.6.0",
-    "torchvision==0.21.0",
-    "numpy==1.26.0",
-    "ultralytics==8.3.86",
-    "opencv-python-headless==4.8.0.76",  # headless to avoid GUI deps
+    "tensorflow",
+    "torch",
+    "torchvision",
+    "numpy",
+    "ultralytics",
+    "opencv-python-headless",  # headless to avoid GUI deps
     "pillow",
     "requests",
     "python-dotenv>=1.0.0",
