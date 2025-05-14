@@ -1,14 +1,11 @@
 # Base image with Python 3.9 and explicit architecture targeting for x86_64
-FROM --platform=linux/amd64 python:3.9-slim-bullseye
+FROM python:3.9-slim
 
-# Environment configuration
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
-    TEMP_IMAGES_DIR=/app/temp_images \
-    MODEL_PATH=/app/data-models \
-    PYTHONPATH=/app \
-    OPENBLAS_CORETYPE=generic
+    PYTHONPATH=/app 
 
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -42,7 +39,7 @@ RUN mkdir -p ${TEMP_IMAGES_DIR} && \
 
 # Install Python dependencies using binary wheels
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --no-binary==numpy .
+    pip install --no-cache-dir .
 
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
@@ -51,4 +48,4 @@ RUN adduser --disabled-password --gecos '' appuser && \
 USER appuser
 
 # Run the application
-CMD ["sh", "-c", "echo 'Running on x86_64 with Python 3.9' && python api.py"]
+CMD ["python", "api.py"]
