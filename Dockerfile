@@ -10,17 +10,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    ffmpeg \
     libgl1 \
     libglib2.0-0 \
     libjpeg62-turbo-dev \
     libpng-dev \
     libtiff5-dev \
-    libavcodec58 \
-    libavformat58 \
-    libswscale5 \
     libv4l-0 \
     libxvidcore4 \
-    libx264-160 \
     libatlas-base-dev \
     gfortran \
     python3-dev \
