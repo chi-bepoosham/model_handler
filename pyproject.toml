@@ -19,7 +19,7 @@ dependencies = [
     "torchvision==0.21.0",
     "numpy==1.26.0",
     "ultralytics==8.3.86",
-    "opencv-python-headless==4.8.0.76"
+    "opencv-python-headless==4.8.0.76",
     "pillow",
     "requests",
     "python-dotenv>=1.0.0",
