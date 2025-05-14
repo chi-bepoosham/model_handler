@@ -30,10 +30,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY . .
 
-# Create required directories
-RUN mkdir -p ${TEMP_IMAGES_DIR} && \
-    mkdir -p ${MODEL_PATH}
-
 # Install Python dependencies using binary wheels
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir .
