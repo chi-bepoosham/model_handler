@@ -8,6 +8,7 @@ import os
 from model_handler_service.load_and_predict_man import process_clothing_image, get_man_body_type
 from model_handler_service.load_and_predict_woman import process_woman_clothing_image, process_six_model_predictions, get_body_type_female
 from model_handler_service.core.config import config
+from model_handler_service.core.logger import model_logger
 
 # Temporary directory for storing images
 TEMP_IMAGES_DIR = config.get_temp_dir()
@@ -34,6 +35,7 @@ def download_image(image_url):
 def classify_clothing():
     """API endpoint for clothing classification."""
     data = request.json
+    model_logger.info("Received request for clothing classification.")
 
     # Extract input parameters
     gender = data.get('gender')
@@ -41,6 +43,7 @@ def classify_clothing():
 
     # Validate input data
     if not image_url or gender not in [0, 1, "0", "1"]:
+        model_logger.warning("Invalid input data - missing image URL or invalid gender value.")
         return jsonify({
             "ok": False,
             "data": None,
@@ -53,6 +56,7 @@ def classify_clothing():
     # Download image
     img_path = download_image(image_url)
     if not img_path:
+        model_logger.error("Failed to download image from provided URL.")
         return jsonify({
             "ok": False,
             "data": None,
@@ -64,20 +68,18 @@ def classify_clothing():
 
     # Process image based on gender
     if str(gender) == "1":  # Male
+        model_logger.info("Processing clothing image for male.")
         process_data = process_clothing_image(img_path)
-    
     else:  # Female
-        # Run the main clothing model for women
+        model_logger.info("Processing clothing image for female.")
         process_data = process_woman_clothing_image(img_path)
-        print("\n\n\n",process_data,"\n\n\n")
         
         # Check if the clothing type is not "fpaintane" (not lower body)
         if process_data.get('paintane') != "fpaintane":
             six_model_results = process_six_model_predictions(img_path)
             process_data["data"].update(six_model_results)  # Merge both results
-        
-        print("\n\n\n",process_data,"\n\n\n")
 
+    model_logger.info("Clothing classification completed successfully.")
     return jsonify(process_data)
 
 
@@ -85,6 +87,7 @@ def classify_clothing():
 def classify_bodytype():
     """API endpoint for body type classification."""
     data = request.json
+    model_logger.info("Received request for body type classification.")
 
     # Extract input parameters
     gender = data.get('gender')
@@ -92,6 +95,7 @@ def classify_bodytype():
 
     # Validate input data
     if not image_url or gender not in [0, 1, "0", "1"]:
+        model_logger.warning("Invalid input data - missing image URL or invalid gender value.")
         return jsonify({
             "ok": False,
             "data": None,
@@ -104,6 +108,7 @@ def classify_bodytype():
     # Download image
     img_path = download_image(image_url)
     if not img_path:
+        model_logger.error("Failed to download image from provided URL.")
         return jsonify({
             "ok": False,
             "data": None,
@@ -115,10 +120,13 @@ def classify_bodytype():
 
     # Process body type based on gender
     if str(gender) == "1":  # Male
+        model_logger.info("Processing body type classification for male.")
         process_data = get_man_body_type(img_path)
     else:  # Female
+        model_logger.info("Processing body type classification for female.")
         process_data = get_body_type_female(img_path)
 
+    model_logger.info("Body type classification completed successfully.")
     return jsonify(process_data)
 
 
