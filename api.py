@@ -31,6 +31,12 @@ def download_image(image_url):
         return None
 
 
+@app.route("/healthcheck", methods=['GET'])
+def health_check():
+    """Health check endpoint to verify that the API is running."""
+    return jsonify({"ok": True, "data": {"status": "API is running"}, "error": None}), 200
+
+
 @app.route('/clothing', methods=['POST'])
 def classify_clothing():
     """API endpoint for clothing classification."""
