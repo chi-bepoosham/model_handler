@@ -2,9 +2,11 @@ import os
 import cv2
 import time
 from model_handler_service.core.loaders import load_model, predict_class, yolo_predict_crop
-from model_handler_service.core.config import config
+from model_handler_service.core.processing import preprocess_image_for_bodytype
+from model_handler_service.core.validations import validate_human_image
 from model_handler_service.core.logger import model_logger
 from model_handler_service.color import get_color_tone
+from model_handler_service.core.config import config
 import torch
 
 # Define model paths using the MODEL_PATH from config
@@ -230,7 +232,6 @@ def process_woman_clothing_image(image_path):
 
 
 def get_body_type_female(image_path):
-    image = cv2.imread(image_path)
     
     response = {
         "ok": True,
@@ -240,18 +241,19 @@ def get_body_type_female(image_path):
         "error": None
     }
 
-    # Validate image was loaded successfully
-    if image is None:
+    # Loading and preprocessing image
+    try:
+        image = preprocess_image_for_bodytype(image_path)
+    except Exception as e:
         response["ok"] = False
         response["error"] = {
-            "code": "IMAGE_LOAD_ERROR",
-            "message": "Failed to load image file",
+            "code": "IMAGE_PREPROCESS_ERROR",
+            "message": str(e),
         }
         return response
 
-    # TODO: Add actual human validation logic here
-    # For now returning mock validation
-    human_validation_errors = []
+    # Human validation
+    human_validation_errors = validate_human_image(image_path)
     if len(human_validation_errors) > 0:
         response["ok"] = False
         response["error"] = {

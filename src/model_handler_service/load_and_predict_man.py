@@ -209,7 +209,7 @@ def get_man_body_type(image_path):
         return response
 
     # Human validation
-    human_validation_errors = validate_human_image()
+    human_validation_errors = validate_human_image(image_path)
     if len(human_validation_errors) > 0:
         response["ok"] = False
         response["error"] = {
