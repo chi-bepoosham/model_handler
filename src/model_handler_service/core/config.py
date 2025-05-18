@@ -51,7 +51,9 @@ class Config:
     REQUIRED_VARS = [
         'TEMP_IMAGES_DIR',
         'MODEL_PATH',
-        'LOGS_PATH' 
+        'LOGS_PATH',
+        'FILE_LOG_LEVEL',
+        'CONSOLE_LOG_LEVEL'
     ]
 
     def __init__(self):
@@ -115,6 +117,18 @@ class Config:
                     f"Temporary images directory '{self.temp_images_dir}' is not writable. Please create it manually."
                 )
             raise ConfigurationError(f"Failed to create directory '{self.temp_images_dir}': {str(e)}")
+        
+        # Get logging levels
+        self.file_log_level = os.getenv('FILE_LOG_LEVEL', 'INFO')
+        self.console_log_level = os.getenv('CONSOLE_LOG_LEVEL', 'INFO')
+
+        # Validate logging levels
+        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        if self.file_log_level not in valid_levels:
+            raise ConfigurationError(f"Invalid FILE_LOG_LEVEL: {self.file_log_level}. Must be one of {valid_levels}")
+        if self.console_log_level not in valid_levels:
+            raise ConfigurationError(f"Invalid CONSOLE_LOG_LEVEL: {self.console_log_level}. Must be one of {valid_levels}")
+
     
     def get_temp_dir(self) -> Path:
         """Get temporary images directory path."""
@@ -141,7 +155,9 @@ class Config:
         return {
             'temp_images_dir': str(self.temp_images_dir),
             'model_path': str(self.model_path),
-            'logs_path': str(self.logs_path) 
+            'logs_path': str(self.logs_path),
+            'file_log_level': self.file_log_level,
+            'console_log_level': self.console_log_level
         }
 
 # Create a global configuration instance

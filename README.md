@@ -69,12 +69,18 @@ pip install -e .
 The service requires the following environment variables in your `.env` file:
 
 ```
-# Service Configuration
-DEBUG=False
-LOG_LEVEL=INFO
-
 # Image Processing Configuration
-TEMP_IMAGES_DIR=/path/to/temp/images/
+TEMP_IMAGES_DIR=/var/www/temp_images/
+
+# Model Configuration
+MODEL_PATH=/path/to/models
+
+# Logs Directory
+LOGS_PATH=/path/to/logs
+
+# Logging Levels
+FILE_LOG_LEVEL=INFO
+CONSOLE_LOG_LEVEL=INFO
 ```
 
 ## Running the Service
@@ -87,7 +93,7 @@ python api.py
 ### Running with Docker
 ```bash
 docker build -t model-handler-service .
-docker run -d -p 5001:5001 model-handler-service
+docker run -d -p 5001:5001 -e TEMP_IMAGES_DIR=/var/www/temp_images/ -e MODEL_PATH=/path/to/models -e LOGS_PATH=/path/to/logs -v /path/to/models:/app/data-models model-handler-service
 ```
 
 ## API Endpoints

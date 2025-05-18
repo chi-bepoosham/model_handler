@@ -18,24 +18,57 @@ app = Flask(__name__)
 
 def download_image(image_url):
     """Downloads an image from the given URL and saves it in the temporary directory."""
+    model_logger.debug(f"Attempting to download image from URL: {image_url}")
     try:
+        model_logger.debug(f"Making GET request to {image_url} with timeout 10s.")
+        response = requests.get(image_url, timeout=10)
+        model_logger.debug(f"Received response with status code: {response.status_code}")
+        response.raise_for_status()
+        model_logger.debug("Response status code indicates success.")
+
         filename = image_url.split('/')[-1]
+        model_logger.debug(f"Extracted filename from URL: {filename}")
         # Check if the filename has a common image extension
         image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
         has_extension = any(filename.lower().endswith(ext) for ext in image_extensions)
+        model_logger.debug(f"Filename has common extension: {has_extension}")
 
         # If no common extension is found, add a default one (e.g., .jpg)
         if not has_extension:
             filename += '.jpg'
-        img_data = requests.get(image_url).content
-        img_name = os.path.join(TEMP_IMAGES_DIR, f"{int(time.time())}{random.randrange(100, 999)}-temp-{filename}")
+            model_logger.debug(f"Added default .jpg extension. New filename: {filename}")
 
+        # Basic filename sanitization to prevent path traversal or invalid characters
+        safe_filename = "".join([c for c in filename if c.isalnum() or c in (' ', '.', '_', '-')]).rstrip()
+        model_logger.debug(f"Sanitized filename: {safe_filename}")
+        if not safe_filename: # Handle cases where filename becomes empty after sanitization
+             safe_filename = "downloaded_image.jpg" # Default filename if original is unusable
+             model_logger.debug(f"Sanitized filename was empty, using default: {safe_filename}")
+
+        img_data = response.content # Use content from the successful response
+        img_name = os.path.join(TEMP_IMAGES_DIR, f"{int(time.time())}{random.randrange(100, 999)}-temp-{safe_filename}")
+        model_logger.debug(f"Constructed temporary file path: {img_name}")
+
+        model_logger.debug(f"Writing image data to file: {img_name}")
         with open(img_name, 'wb') as handler:
             handler.write(img_data)
-        
+        model_logger.debug("Image data successfully written to file.")
+
+        model_logger.info(f"Successfully downloaded image from {image_url} to {img_name}")
         return img_name
+
+    except requests.exceptions.RequestException as e:
+        model_logger.error(f"Request error downloading image from {image_url}: {e}")
+        raise
+
+    except OSError as e:
+        model_logger.error(f"File system error saving image from {image_url} to {TEMP_IMAGES_DIR}: {e}")
+        raise
+
     except Exception as e:
-        return None
+        # Catch any other unexpected errors
+        model_logger.error(f"An unexpected error occurred while downloading image from {image_url}: {e}")
+        raise
 
 
 @app.route("/healthcheck", methods=['GET'])
@@ -67,15 +100,18 @@ def classify_clothing():
         }), 400
 
     # Download image
-    img_path = download_image(image_url)
-    if not img_path:
-        model_logger.error("Failed to download image from provided URL.")
+    try:
+        img_path = download_image(image_url)
+    except Exception as e:
+        # Catch any exception during download and return detailed error
+        model_logger.error(f"Failed to download image from {image_url}: {e}", exc_info=True)
         return jsonify({
             "ok": False,
             "data": None,
             "error": {
-                "code": "IMAGE_DOWNLOAD_FAILED", 
-                "message": "Failed to download image from provided URL"
+                "code": "IMAGE_DOWNLOAD_FAILED",
+                "message": "Failed to download image from provided URL",
+                "detail": str(e) 
             }
         }), 500
 

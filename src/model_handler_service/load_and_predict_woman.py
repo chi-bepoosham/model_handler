@@ -38,29 +38,47 @@ model_logger.info("Starting to load all women's clothing models")
 start_time = time.time()
 
 try:
+    model_logger.debug(f"Loading model: {model_astin_path}")
     model_astin = load_model(model_astin_path, class_num=6, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_patern_path}")
     model_patern = load_model(model_patern_path, class_num=5, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_paintane_path}")
     model_paintane = load_model(model_paintane_path, class_num=3, base_model="mobilenet-v2-pt")
+    model_logger.debug(f"Loading model: {model_rise_path}")
     model_rise = load_model(model_rise_path, class_num=2, base_model="resnet152_600")
+    model_logger.debug(f"Loading model: {model_shalvar_path}")
     model_shalvar = load_model(model_shalvar_path, class_num=8, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_tarh_shalvar_path}")
     model_tarh_shalvar = load_model(model_tarh_shalvar_path, class_num=5, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_skirt_pants_path}")
     model_skirt_pants = load_model(model_skirt_pants_path, class_num=2, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_yaghe_path}")
     model_yaghe = load_model(model_yaghe_path, class_num=11, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_skirt_print_path}")
     model_skirt_print = load_model(model_skirt_print_path, class_num=5, base_model="resnet101_30_unit")
+    model_logger.debug(f"Loading model: {model_skirt_type_path}")
     model_skirt_type = load_model(model_skirt_type_path, class_num=7, base_model="resnet101_30_unit")
+    model_logger.debug(f"Loading model: {model_mnist_path}")
     model_mnist = load_model(model_mnist_path, class_num=2, base_model="mobilenet-v2")
-    
-    model_logger.info("Loading PyTorch body type model")
+
+    model_logger.debug(f"Loading PyTorch body type model: {model_body_type_path}")
     model_body_type = torch.load(model_body_type_path, map_location=torch.device('cpu'))  # Load PyTorch model body type (arian)
-    
+
+    model_logger.debug(f"Loading model: {model_yolo_path}")
     model_yolo = load_model(model_yolo_path, class_num=2, base_model="yolo")
+    model_logger.debug(f"Loading model: {model_balted_path}")
     model_balted = load_model(model_balted_path, class_num=2, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_cowl_path}")
     model_cowl = load_model(model_cowl_path, class_num=2, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_empire_path}")
     model_empire = load_model(model_empire_path, class_num=2, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_loose_path}")
     model_loose = load_model(model_loose_path, class_num=2, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_peplum_path}")
     model_peplum = load_model(model_peplum_path, class_num=2, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_wrap_path}")
     model_wrap = load_model(model_wrap_path, class_num=2, base_model="resnet101")
-    
+
     total_time = time.time() - start_time
     model_logger.info(f"Successfully loaded all women's clothing models in {total_time:.2f} seconds")
 except Exception as e:

@@ -29,18 +29,29 @@ model_logger.info("Starting to load all men's clothing models")
 start_time = time.time()
 
 try:
+    model_logger.debug(f"Loading model: {model_astin_path}")
     model_astin = load_model(model_astin_path, class_num=3, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_patern_path}")
     model_patern = load_model(model_patern_path, class_num=5, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_paintane_path}")
     model_paintane = load_model(model_paintane_path, class_num=2, base_model="mobilenet")
+    model_logger.debug(f"Loading model: {model_rise_path}")
     model_rise = load_model(model_rise_path, class_num=2, base_model="resnet152_600")
+    model_logger.debug(f"Loading model: {model_shalvar_path}")
     model_shalvar = load_model(model_shalvar_path, class_num=7, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_mnist_path}")
     model_mnist = load_model(model_mnist_path, class_num=2, base_model="mobilenet-v2")
+    model_logger.debug(f"Loading model: {model_tarh_shalvar_path}")
     model_tarh_shalvar = load_model(model_tarh_shalvar_path, class_num=5, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_skirt_pants_path}")
     model_skirt_pants = load_model(model_skirt_pants_path, class_num=2, base_model="resnet101")
+    model_logger.debug(f"Loading model: {model_yaghe_path}")
     model_yaghe = load_model(model_yaghe_path, class_num=5, base_model="mobilenet-v2-softmax")
+    model_logger.debug(f"Loading model: {model_yolo_path}")
     model_yolo = load_model(model_yolo_path, class_num=2, base_model="yolo")
+    model_logger.debug(f"Loading model: {model_body_type_path}")
     model_body_type = load_model(model_body_type_path, class_num=3, base_model="bodytype")
-    
+
     total_time = time.time() - start_time
     model_logger.info(f"Successfully loaded all men's clothing models in {total_time:.2f} seconds")
 except Exception as e:
