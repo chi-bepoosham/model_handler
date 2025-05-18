@@ -191,9 +191,7 @@ def get_man_body_type(image_path):
 
     response = {
         "ok": True,
-        "data": {
-            "body_type": "string",
-        },
+        "data": {},
         "error": None
     }
 
