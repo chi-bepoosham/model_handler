@@ -155,15 +155,18 @@ def classify_bodytype():
         }), 400
 
     # Download image
-    img_path = download_image(image_url)
-    if not img_path:
-        model_logger.error("Failed to download image from provided URL.")
+    try:
+        img_path = download_image(image_url)
+    except Exception as e:
+        # Catch any exception during download and return detailed error
+        model_logger.error(f"Failed to download image from {image_url}: {e}", exc_info=True)
         return jsonify({
             "ok": False,
             "data": None,
             "error": {
                 "code": "IMAGE_DOWNLOAD_FAILED",
-                "message": "Failed to download image from provided URL"
+                "message": "Failed to download image from provided URL",
+                "detail": str(e) 
             }
         }), 500
 
