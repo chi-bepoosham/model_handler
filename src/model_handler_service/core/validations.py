@@ -36,9 +36,12 @@ def validate_human_image(image_path):
 
     # Get missing required landmarks
     missing_landmarks = []
-    for i, landmark in enumerate(results.pose_landmarks.landmark):
-        name = LANDMARK_NAMES[i]
-        if name in REQUIRED_LANDMARKS and landmark.visibility < 0.5:
-            missing_landmarks.append(name)
+    if results.pose_landmarks:
+        for i, landmark in enumerate(results.pose_landmarks.landmark):
+            name = LANDMARK_NAMES[i]
+            if name in REQUIRED_LANDMARKS and landmark.visibility < 0.5:
+                missing_landmarks.append(name)
+    else:
+        missing_landmarks = REQUIRED_LANDMARKS
 
     return missing_landmarks if missing_landmarks else []
