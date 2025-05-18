@@ -51,9 +51,7 @@ class Config:
     REQUIRED_VARS = [
         'TEMP_IMAGES_DIR',
         'MODEL_PATH',
-        'LOGS_PATH',
-        'FILE_LOG_LEVEL',
-        'CONSOLE_LOG_LEVEL'
+        'LOGS_PATH'
     ]
 
     def __init__(self):
