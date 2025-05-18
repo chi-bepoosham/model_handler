@@ -221,7 +221,7 @@ def get_man_body_type(image_path):
     body_type = predict_class(
         img=image,
         model=model_body_type,
-        class_names=['men_inverted_triangle', 'men_oval', 'men_rectangle'],
+        class_names=['0', '1', '2'],
         reso=300,
         model_name="bodytype"
     )
