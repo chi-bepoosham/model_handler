@@ -235,9 +235,7 @@ def get_body_type_female(image_path):
     
     response = {
         "ok": True,
-        "data": {
-            "body_type": "string",
-        },
+        "data": {},
         "error": None
     }
 
