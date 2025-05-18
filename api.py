@@ -20,6 +20,13 @@ def download_image(image_url):
     """Downloads an image from the given URL and saves it in the temporary directory."""
     try:
         filename = image_url.split('/')[-1]
+        # Check if the filename has a common image extension
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+        has_extension = any(filename.lower().endswith(ext) for ext in image_extensions)
+
+        # If no common extension is found, add a default one (e.g., .jpg)
+        if not has_extension:
+            filename += '.jpg'
         img_data = requests.get(image_url).content
         img_name = os.path.join(TEMP_IMAGES_DIR, f"{int(time.time())}{random.randrange(100, 999)}-temp-{filename}")
 
