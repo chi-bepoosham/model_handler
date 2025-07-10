@@ -1,8 +1,10 @@
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 import cv2
 import numpy as np
 import torch
 import time
-import os
 from ultralytics import YOLO
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from colorsys import rgb_to_hls
@@ -11,8 +13,9 @@ from model_handler_service.core.logger import model_logger
 from model_handler_service.core.config import config
 
 
-# Initialize device
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Initialize device (force CPU)
+device = torch.device("cpu")
 model_logger.info(f"Using device for color analysis: {device}")
 
 # Define model paths using the MODEL_PATH from config

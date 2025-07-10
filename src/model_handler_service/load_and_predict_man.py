@@ -1,4 +1,6 @@
+
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 import cv2
 import time
 from model_handler_service.core.loaders import load_model, predict_class, yolo_predict_crop

@@ -1,4 +1,6 @@
+
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 import cv2
 import time
 from model_handler_service.core.loaders import load_model, predict_class, yolo_predict_crop
@@ -34,6 +36,7 @@ model_empire_path = str(config.get_model_file_path('6model/empire.h5'))
 model_loose_path = str(config.get_model_file_path('6model/loose.h5'))
 model_peplum_path = str(config.get_model_file_path('6model/peplum.h5'))
 model_wrap_path = str(config.get_model_file_path('6model/wrap.h5'))
+
 
 # Load models globally
 model_logger.info("Starting to load all women's clothing models")
