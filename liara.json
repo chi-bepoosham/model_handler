@@ -1,0 +1,14 @@
+{
+    "app": "model_handler",
+    "port": 80,
+    "build": {
+        "location": "germany"
+    },
+    "disks":[],
+    "flask": {
+        "appModule": "api:app",
+        "mirror": true,
+        "pythonVersion": "3.12",
+        "timezone": "Iran/Tehran"
+    }
+}
