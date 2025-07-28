@@ -17,7 +17,7 @@ models/
 *.npz
 
 # Environment variables
-.env
+# .env
 
 # Python
 __pycache__/
