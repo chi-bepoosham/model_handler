@@ -1,4 +1,3 @@
-# Base image with Python 3.9 and explicit architecture targeting for x86_64
 FROM python:3.10-slim
 
 # Set environment variables
