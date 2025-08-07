@@ -186,4 +186,23 @@ def classify_bodytype():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=5001)
+
+
+
+"""
+docker run -d --name myapp_container \
+  -p 8001:80 \
+  -v $(pwd)/temp_images_data:/temp_images \
+  -v $(pwd)/logs_data:/logs \
+  -v $(pwd)/models_data:/models \
+  -v $(pwd)/models_data/torch_cache:/home/appuser/.cache/torch/hub/checkpoints \
+  -v $(pwd)/models_data/keras_cache:/home/appuser/.keras \
+  -v $(pwd)/matplotlib_cache:/home/appuser/.cache/matplotlib \
+  -e TEMP_IMAGES_DIR=/temp_images \
+  -e LOGS_PATH=/logs \
+  -e MODEL_PATH=/models \
+  -e FILE_LOG_LEVEL=DEBUG \
+  -e CONSOLE_LOG_LEVEL=INFO \
+  myapp:latest
+"""
