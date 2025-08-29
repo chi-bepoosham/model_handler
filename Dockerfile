@@ -1,4 +1,5 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
+
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -17,12 +18,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libtiff5-dev \
     libv4l-0 \
     libxvidcore4 \
-    libatlas-base-dev \
     gfortran \
     python3-dev \
     libsm6 \
     libxext6 \
-    libxrender1 \   
+    libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Application setup
