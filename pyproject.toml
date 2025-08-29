@@ -24,7 +24,7 @@ dependencies = [
     "requests",
     "python-dotenv>=1.0.0",
     "scikit-learn==1.6.1",
-    "mediapipe==0.8.10",
+    "mediapipe==0.10.21",
     "Flask==3.1.0",
     "segment-anything==1.0"
 ]
