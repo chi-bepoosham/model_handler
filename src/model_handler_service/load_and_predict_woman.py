@@ -166,7 +166,7 @@ def process_woman_clothing_image(image_path):
         results["paintane"] = None
 
     # 3. Conditional Predictions based on 'paintane' (Clothing Type)
-    # Upper body or full body clothing
+    # Upper body یا full body clothing
     if results["paintane"] in ["fbalatane", "ftamamtane"]:
         model_logger.info("Detected 'fbalatane' or 'ftamamtane'. Proceeding with upper body predictions.")
         try:
@@ -182,6 +182,17 @@ def process_woman_clothing_image(image_path):
         except Exception as e:
             model_logger.error(f"YOLO crop failed: {e}")
             crop_image_astin, crop_image_yaghe = None, None
+
+        # شرط جدید: اگر هیچ لباس پیدا نشد (هر دو crop None)
+        if crop_image_astin is None and crop_image_yaghe is None:
+            model_logger.error("YOLO did not detect any clothing. Returning error response.")
+            response["ok"] = False
+            response["data"] = None
+            response["error"] = {
+                "code": "NO_CLOTHING_DETECTED",
+                "message": "No clothing detected in the image (YOLO found nothing)"
+            }
+            return response
 
         # Astin prediction only if crop is not None
         if crop_image_astin is not None:
