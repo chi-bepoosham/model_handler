@@ -259,6 +259,18 @@ def process_woman_clothing_image(image_path):
             model_logger.error(f"Skirt type prediction failed: {e}")
             results["skirt_type"] = None
 
+    # Check if no clothing detected (کلیدهای مهم None باشند)
+    clothing_keys = ["color_tone", "paintane", "astin", "pattern", "yaghe", "rise", "shalvar", "tarh_shalvar", "skirt_and_pants"]
+    clothing_none = all(results.get(k) is None for k in clothing_keys)
+    if clothing_none:
+        model_logger.error("No clothing detected in the image. Returning error response.")
+        response["ok"] = False
+        response["data"] = None
+        response["error"] = {
+            "code": "NO_CLOTHING_DETECTED",
+            "message": "No clothing detected in the image"
+        }
+        return response
     response["data"] = results
     return response
 
