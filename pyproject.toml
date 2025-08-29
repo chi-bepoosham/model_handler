@@ -14,7 +14,7 @@ authors = [
 ]
 dependencies = [
     "datetime==5.5",
-    "tensorflow==2.18.0",
+    "tensorflow-cpu==2.5.0",
     "torch==2.6.0",
     "torchvision==0.21.0",
     "numpy==1.26.0",
@@ -24,7 +24,7 @@ dependencies = [
     "requests",
     "python-dotenv>=1.0.0",
     "scikit-learn==1.6.1",
-    "mediapipe==0.10.15",
+    "mediapipe==0.10.21",
     "Flask==3.1.0",
     "segment-anything==1.0"
 ]
