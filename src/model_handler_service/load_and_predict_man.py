@@ -114,77 +114,108 @@ def process_clothing_image(img_path):
         }
         return response
     
-    print(f"Processing image: {img_path}")
+    from model_handler_service.core.logger import model_logger
+    model_logger.info(f"Processing image: {img_path}")
     results = {}
 
     # 2. General Predictions (Independent of clothing type)
-    # Predict color tone
-    results["color_tone"] = get_color_tone(img_path)
-    print(f"Color tone prediction: {results.get('color_tone')}")
+    model_logger.info("Start color_tone prediction")
+    try:
+        results["color_tone"] = get_color_tone(img_path)
+        model_logger.info(f"Color tone prediction result: {results.get('color_tone')}")
+    except Exception as e:
+        model_logger.error(f"Color tone prediction failed: {e}")
+        results["color_tone"] = None
 
-    # Predict clothing type (paintane or balatane)
-    results["paintane"] = predict_class(img, model=model_paintane, class_names=["mbalatane", 'mpayintane'], reso=224, model_name="paintane")
-    print(f"Paintane prediction: {results.get('paintane')}")
+    model_logger.info("Start paintane prediction")
+    try:
+        results["paintane"] = predict_class(img, model=model_paintane, class_names=["mbalatane", 'mpayintane'], reso=224, model_name="paintane")
+        model_logger.info(f"Paintane prediction result: {results.get('paintane')}")
+    except Exception as e:
+        model_logger.error(f"Paintane prediction failed: {e}")
+        results["paintane"] = None
 
     # 3. Conditional Predictions based on 'paintane' (Clothing Type)
     # Upper body clothing
     if results["paintane"] == "mbalatane":
-        print("Detected 'mbalatane' (upper body clothing). Proceeding with upper body predictions.")
+        model_logger.info("Detected 'mbalatane' (upper body clothing). Proceeding with upper body predictions.")
+        try:
+            crop_image_astin, crop_image_yaghe = yolo_predict_crop(model=model_yolo, image_path=img_path, image=img)
+            model_logger.info(f"YOLO detection completed. astin crop: {crop_image_astin is not None}, yaghe crop: {crop_image_yaghe is not None}")
+        except Exception as e:
+            model_logger.error(f"YOLO crop failed: {e}")
+            crop_image_astin, crop_image_yaghe = None, None
 
-        # Crop astin and yaghe
-        crop_image_astin, crop_image_yaghe = yolo_predict_crop(model=model_yolo, image_path=img_path, image=img)
-        print(f"YOLO detection completed. astin crop: {crop_image_astin is not None}, yaghe crop: {crop_image_yaghe is not None}")
+        try:
+            results["mnist_prediction"] = predict_class(img, model=model_mnist, class_names=["Under", "Over"], reso=224, model_name="mnist")
+            model_logger.info(f"MNIST prediction result: {results.get('mnist_prediction')}")
+        except Exception as e:
+            model_logger.error(f"MNIST prediction failed: {e}")
+            results["mnist_prediction"] = None
 
-        # MNIST prediction for under/over clothing
-        results["mnist_prediction"] = predict_class(img, model=model_mnist, class_names=["Under", "Over"], reso=224, model_name="mnist")
-        print(f"MNIST prediction: {results.get('mnist_prediction')}")
+        # Astin prediction only if crop is not None
+        if crop_image_astin is not None:
+            try:
+                results["astin"] = predict_class(crop_image_astin, model=model_astin, class_names=["longsleeve", "shortsleeve", "sleeveless"], reso=300, model_name="astin")
+                model_logger.info(f"Astin prediction result: {results.get('astin')}")
+            except Exception as e:
+                model_logger.error(f"Astin prediction failed: {e}")
+                results["astin"] = None
+        else:
+            model_logger.error("Astin crop is None, skipping astin prediction.")
+            results["astin"] = None
 
-        # Predict sleeve type (astin)
-        results["astin"] = predict_class(crop_image_astin, model=model_astin,
-                                         class_names=["longsleeve", "shortsleeve", "sleeveless"], reso=300,
-                                         model_name="astin")
-        print(f"Astin prediction: {results.get('astin')}")
+        try:
+            results["pattern"] = predict_class(img, model=model_patern, class_names=["amudi", "dorosht", "ofoghi", "riz", "sade"], reso=300, model_name="pattern")
+            model_logger.info(f"Pattern prediction result: {results.get('pattern')}")
+        except Exception as e:
+            model_logger.error(f"Pattern prediction failed: {e}")
+            results["pattern"] = None
 
-        # Predict pattern
-        results["pattern"] = predict_class(img, model=model_patern,
-                                           class_names=["amudi", "dorosht", "ofoghi", "riz", "sade"], reso=300,
-                                           model_name="pattern")
-        print(f"Pattern prediction: {results.get('pattern')}")
-
-        # Predict neckline (yaghe)
-        results["yaghe"] = predict_class(crop_image_yaghe, model=model_yaghe,
-                                         class_names=["classic", "hoodie", "round", "turtleneck", "V_neck"], reso=300,
-                                         model_name="yaghe")
-        print(f"Yaghe prediction: {results.get('yaghe')}")
+        # Yaghe prediction only if crop is not None
+        if crop_image_yaghe is not None:
+            try:
+                results["yaghe"] = predict_class(crop_image_yaghe, model=model_yaghe, class_names=["classic", "hoodie", "round", "turtleneck", "V_neck"], reso=300, model_name="yaghe")
+                model_logger.info(f"Yaghe prediction result: {results.get('yaghe')}")
+            except Exception as e:
+                model_logger.error(f"Yaghe prediction failed: {e}")
+                results["yaghe"] = None
+        else:
+            model_logger.error("Yaghe crop is None, skipping yaghe prediction.")
+            results["yaghe"] = None
 
     # Lower body clothing
     elif results["paintane"] == "mpayintane":
-        print("Detected 'mpayintane' (lower body clothing). Proceeding with lower body predictions.")
+        model_logger.info("Detected 'mpayintane' (lower body clothing). Proceeding with lower body predictions.")
+        try:
+            results["rise"] = predict_class(img, model=model_rise, class_names=["highrise", "lowrise"], reso=300, model_name="rise")
+            model_logger.info(f"Rise prediction result: {results.get('rise')}")
+        except Exception as e:
+            model_logger.error(f"Rise prediction failed: {e}")
+            results["rise"] = None
 
-        # Predict rise
-        results["rise"] = predict_class(img, model=model_rise, class_names=["highrise", "lowrise"], reso=300,
-                                        model_name="rise")
-        print(f"Rise prediction: {results.get('rise')}")
+        try:
+            results["shalvar"] = predict_class(img, model=model_shalvar, class_names=["mbaggy", "mcargo", "mcargoshorts", "mmom", "mshorts", "mslimfit", "mstraight"], reso=300, model_name="noe shalvar")
+            model_logger.info(f"Shalvar prediction result: {results.get('shalvar')}")
+        except Exception as e:
+            model_logger.error(f"Shalvar prediction failed: {e}")
+            results["shalvar"] = None
 
-        # Predict shalvar type
-        results["shalvar"] = predict_class(img, model=model_shalvar,
-                                           class_names=["mbaggy", "mcargo", "mcargoshorts", "mmom", "mshorts",
-                                                        "mslimfit", "mstraight"], reso=300, model_name="noe shalvar")
-        print(f"Shalvar prediction: {results.get('shalvar')}")
+        try:
+            results["tarh_shalvar"] = predict_class(img, model=model_tarh_shalvar, class_names=["mpamudi", "mpdorosht", "mpofoghi", "mpriz", "mpsade"], reso=300, model_name="tarhshalvar")
+            model_logger.info(f"Tarh shalvar prediction result: {results.get('tarh_shalvar')}")
+        except Exception as e:
+            model_logger.error(f"Tarh shalvar prediction failed: {e}")
+            results["tarh_shalvar"] = None
 
-        # Predict shalvar pattern
-        results["tarh_shalvar"] = predict_class(img, model=model_tarh_shalvar,
-                                                class_names=["mpamudi", "mpdorosht", "mpofoghi", "mpriz", "mpsade"],
-                                                reso=300, model_name="tarhshalvar")
-        print(f"Tarh shalvar prediction: {results.get('tarh_shalvar')}")
+        try:
+            results["skirt_and_pants"] = predict_class(img, model=model_skirt_pants, class_names=["pants", "skirt"], reso=300, model_name="skirt and pants")
+            model_logger.info(f"Skirt and pants prediction result: {results.get('skirt_and_pants')}")
+        except Exception as e:
+            model_logger.error(f"Skirt and pants prediction failed: {e}")
+            results["skirt_and_pants"] = None
 
-        # Predict skirt or pants
-        results["skirt_and_pants"] = predict_class(img, model=model_skirt_pants, class_names=["pants", "skirt"],
-                                                   reso=300, model_name="skirt and pants")
-        print(f"Skirt and pants prediction: {results.get('skirt_and_pants')}")
-    
-    print("Returning results:")
-    print(results)
+    model_logger.info(f"Returning results: {results}")
     response["data"] = results
     return response
 

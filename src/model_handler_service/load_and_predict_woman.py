@@ -183,11 +183,16 @@ def process_woman_clothing_image(image_path):
             model_logger.error(f"YOLO crop failed: {e}")
             crop_image_astin, crop_image_yaghe = None, None
 
-        try:
-            results["astin"] = predict_class(crop_image_astin, model=model_astin, class_names=['bottompuffy', "fhalfsleeve", "flongsleeve", "fshortsleeve", "fsleeveless", "toppuffy"], reso=300, model_name="astin")
-            model_logger.info(f"Astin prediction result: {results.get('astin')}")
-        except Exception as e:
-            model_logger.error(f"Astin prediction failed: {e}")
+        # Astin prediction only if crop is not None
+        if crop_image_astin is not None:
+            try:
+                results["astin"] = predict_class(crop_image_astin, model=model_astin, class_names=['bottompuffy', "fhalfsleeve", "flongsleeve", "fshortsleeve", "fsleeveless", "toppuffy"], reso=300, model_name="astin")
+                model_logger.info(f"Astin prediction result: {results.get('astin')}")
+            except Exception as e:
+                model_logger.error(f"Astin prediction failed: {e}")
+                results["astin"] = None
+        else:
+            model_logger.error("Astin crop is None, skipping astin prediction.")
             results["astin"] = None
 
         try:
@@ -197,11 +202,16 @@ def process_woman_clothing_image(image_path):
             model_logger.error(f"Pattern prediction failed: {e}")
             results["pattern"] = None
 
-        try:
-            results["yaghe"] = predict_class(crop_image_yaghe, model=model_yaghe, class_names=["boatneck", "classic", "halter", "hoodie", "of_the_shoulder", "one_shoulder", "round", "squer", "sweatheart", 'turtleneck', "v_neck"], reso=300, model_name="yaghe")
-            model_logger.info(f"Yaghe prediction result: {results.get('yaghe')}")
-        except Exception as e:
-            model_logger.error(f"Yaghe prediction failed: {e}")
+        # Yaghe prediction only if crop is not None
+        if crop_image_yaghe is not None:
+            try:
+                results["yaghe"] = predict_class(crop_image_yaghe, model=model_yaghe, class_names=["boatneck", "classic", "halter", "hoodie", "of_the_shoulder", "one_shoulder", "round", "squer", "sweatheart", 'turtleneck', "v_neck"], reso=300, model_name="yaghe")
+                model_logger.info(f"Yaghe prediction result: {results.get('yaghe')}")
+            except Exception as e:
+                model_logger.error(f"Yaghe prediction failed: {e}")
+                results["yaghe"] = None
+        else:
+            model_logger.error("Yaghe crop is None, skipping yaghe prediction.")
             results["yaghe"] = None
 
     # Lower body or full body clothing
