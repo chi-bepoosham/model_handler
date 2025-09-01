@@ -8,7 +8,7 @@ from model_handler_service.core.processing import preprocess_image_for_bodytype
 from model_handler_service.core.validations import validate_human_image
 from model_handler_service.core.config import config
 from model_handler_service.core.logger import model_logger
-from model_handler_service.color import get_color_tone
+from model_handler_service.color import get_color_tone, detect_clothing
 
 # Define model paths using the MODEL_PATH from config
 # This will use the path defined in the .env file
@@ -113,6 +113,21 @@ def process_clothing_image(img_path):
             "validation_errors": clothing_validation_errors
         }
         return response
+    # Preliminary clothing detection using validations/clothes/detect_clothes.pt
+    try:
+        detections = detect_clothing(img_path)
+        if not detections:
+            model_logger.error("No clothing detected by YOLO validations model. Returning error response.")
+            response["ok"] = False
+            response["data"] = None
+            response["error"] = {
+                "code": "NO_CLOTHING_DETECTED",
+                "message": "No clothing detected in the image (YOLO validations model found nothing)"
+            }
+            return response
+    except Exception as e:
+        model_logger.error(f"Validations YOLO detection failed: {e}")
+        # If the validation model fails, continue processing but log the error
     
     from model_handler_service.core.logger import model_logger
     model_logger.info(f"Processing image: {img_path}")
