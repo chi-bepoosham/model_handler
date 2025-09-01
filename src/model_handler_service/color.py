@@ -48,15 +48,39 @@ except Exception as e:
 
 
 def detect_clothing(image_path):
-    
+    """
+    Run YOLO validations model on the image and return bounding boxes
+    that pass a minimum confidence threshold.
+
+    Returns list of (x1, y1, x2, y2).
+    """
+    # minimum confidence to accept a detection (tweakable)
+    min_conf = float(os.getenv("VALIDATIONS_MIN_CONF", 0.35))
+
     results = model(image_path)
-    
+
     detections = []
     for r in results:
-        for box in r.boxes.xyxy:
-            x1, y1, x2, y2 = map(int, box)
-            detections.append((x1, y1, x2, y2))
-    
+        # r.boxes.conf contains confidences for each box when available
+        confs = getattr(r.boxes, "conf", None)
+        xyxys = list(r.boxes.xyxy)
+        if confs is None:
+            # fallback: accept boxes if no conf info, but log a warning
+            model_logger.warning("YOLO results have no confidences; accepting all boxes")
+            for box in xyxys:
+                x1, y1, x2, y2 = map(int, box)
+                detections.append((x1, y1, x2, y2))
+        else:
+            for box, conf in zip(xyxys, confs):
+                try:
+                    c = float(conf)
+                except Exception:
+                    c = 0.0
+                if c >= min_conf:
+                    x1, y1, x2, y2 = map(int, box)
+                    detections.append((x1, y1, x2, y2))
+
+    model_logger.info(f"Validations YOLO detections: {len(detections)} (min_conf={min_conf}) for {os.path.basename(image_path)}")
     return detections
 
 
