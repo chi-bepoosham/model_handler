@@ -129,7 +129,6 @@ def process_clothing_image(img_path):
         model_logger.error(f"Validations YOLO detection failed: {e}")
         # If the validation model fails, continue processing but log the error
     
-    from model_handler_service.core.logger import model_logger
     model_logger.info(f"Processing image: {img_path}")
     results = {}
 
