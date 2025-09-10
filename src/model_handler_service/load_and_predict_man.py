@@ -239,7 +239,7 @@ def process_clothing_image(img_path):
         response["data"] = None
         response["error"] = {
             "code": "NO_CLOTHING_DETECTED",
-            "message": "No clothing detected in the image"
+            "message": "لباسی شناسایی نشد"
         }
         return response
     response["data"] = results
