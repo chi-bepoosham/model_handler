@@ -121,8 +121,8 @@ def process_clothing_image(img_path):
             response["ok"] = False
             response["data"] = None
             response["error"] = {
-                "code": "NO_CLOTHING_DETECTED",
-                "message": "No clothing detected in the image (YOLO validations model found nothing)"
+                "code": "عکس درست بفرس",
+                "message": "لباسی شناسایی نشد"
             }
             return response
     except Exception as e:
