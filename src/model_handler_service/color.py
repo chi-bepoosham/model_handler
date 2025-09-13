@@ -55,7 +55,7 @@ def detect_clothing(image_path):
     Returns list of (x1, y1, x2, y2).
     """
     # minimum confidence to accept a detection (tweakable)
-    min_conf = float(os.getenv("VALIDATIONS_MIN_CONF", 0.35))
+    min_conf = float(os.getenv("VALIDATIONS_MIN_CONF", 0.85))
 
     results = model(image_path)
 
