@@ -10,8 +10,6 @@ from model_handler_service.core.config import config
 from model_handler_service.core.logger import model_logger
 from model_handler_service.color import get_color_tone, detect_clothing
 
-
-
 MODEL_CONFIGS = {
     "astin":        ("astin/astinman.h5", ["longsleeve", "shortsleeve", "sleeveless"], "resnet101", 3),
     "pattern":      ("pattern/petternman.h5", ["amudi", "dorosht", "ofoghi", "riz", "sade"], "resnet101", 5),
@@ -43,9 +41,7 @@ def load_all_models():
     total_time = time.time() - start_time
     model_logger.info(f"Successfully loaded all models in {total_time:.2f} seconds")
 
-
 load_all_models()
-
 
 # =============================
 # process clothing
@@ -74,8 +70,8 @@ def process_clothing_image(img_path: str) -> dict:
     results = {}
 
     # --- Step 2: General predictions ---
-    results["color_tone"] = _safe_predict(get_color_tone, img_path, "color_tone")
-    results["paintane"]   = _safe_predict(predict_class, img, "paintane", MODELS["paintane"], MODEL_CONFIGS["paintane"][1], 224, "paintane")
+    results["color_tone"] = _safe_predict(get_color_tone, img_path, name="color_tone")
+    results["paintane"]   = _safe_predict(predict_class, img, "paintane", MODELS["paintane"], MODEL_CONFIGS["paintane"][1], 224, name="paintane")
 
     # --- Step 3: Conditional predictions ---
     if results["paintane"] == "mbalatane":
@@ -91,7 +87,6 @@ def process_clothing_image(img_path: str) -> dict:
     response["data"] = results
     return response
 
-
 def _predict_upper_body(img, img_path, results):
     """Predictions for upper body clothing (mbalatane)."""
     model_logger.info("Upper body detected → running astin, pattern, yaghe, mnist...")
@@ -101,29 +96,27 @@ def _predict_upper_body(img, img_path, results):
         model_logger.error(f"YOLO crop failed: {e}")
         crop_astin, crop_yaghe = None, None
 
-    results["mnist_prediction"] = _safe_predict(predict_class, img, "mnist", MODELS["mnist"], MODEL_CONFIGS["mnist"][1], 224, "mnist")
+    results["mnist_prediction"] = _safe_predict(predict_class, img, "mnist", MODELS["mnist"], MODEL_CONFIGS["mnist"][1], 224, name="mnist")
 
     if crop_astin is not None:
-        results["astin"] = _safe_predict(predict_class, crop_astin, "astin", MODELS["astin"], MODEL_CONFIGS["astin"][1], 300, "astin")
+        results["astin"] = _safe_predict(predict_class, crop_astin, "astin", MODELS["astin"], MODEL_CONFIGS["astin"][1], 300, name="astin")
     else:
         results["astin"] = None
 
-    results["pattern"] = _safe_predict(predict_class, img, "pattern", MODELS["pattern"], MODEL_CONFIGS["pattern"][1], 300, "pattern")
+    results["pattern"] = _safe_predict(predict_class, img, "pattern", MODELS["pattern"], MODEL_CONFIGS["pattern"][1], 300, name="pattern")
 
     if crop_yaghe is not None:
-        results["yaghe"] = _safe_predict(predict_class, crop_yaghe, "yaghe", MODELS["yaghe"], MODEL_CONFIGS["yaghe"][1], 300, "yaghe")
+        results["yaghe"] = _safe_predict(predict_class, crop_yaghe, "yaghe", MODELS["yaghe"], MODEL_CONFIGS["yaghe"][1], 300, name="yaghe")
     else:
         results["yaghe"] = None
-
 
 def _predict_lower_body(img, results):
     """Predictions for lower body clothing (mpayintane)."""
     model_logger.info("Lower body detected → running rise, shalvar, tarh shalvar, skirt/pants...")
-    results["rise"]          = _safe_predict(predict_class, img, "rise", MODELS["rise"], MODEL_CONFIGS["rise"][1], 300, "rise")
-    results["shalvar"]       = _safe_predict(predict_class, img, "shalvar", MODELS["shalvar"], MODEL_CONFIGS["shalvar"][1], 300, "shalvar")
-    results["tarh_shalvar"]  = _safe_predict(predict_class, img, "tarh_shalvar", MODELS["tarh_shalvar"], MODEL_CONFIGS["tarh_shalvar"][1], 300, "tarh_shalvar")
-    results["skirt_pants"]   = _safe_predict(predict_class, img, "skirt_pants", MODELS["skirt_pants"], MODEL_CONFIGS["skirt_pants"][1], 300, "skirt_pants")
-
+    results["rise"]          = _safe_predict(predict_class, img, "rise", MODELS["rise"], MODEL_CONFIGS["rise"][1], 300, name="rise")
+    results["shalvar"]       = _safe_predict(predict_class, img, "shalvar", MODELS["shalvar"], MODEL_CONFIGS["shalvar"][1], 300, name="shalvar")
+    results["tarh_shalvar"]  = _safe_predict(predict_class, img, "tarh_shalvar", MODELS["tarh_shalvar"], MODEL_CONFIGS["tarh_shalvar"][1], 300, name="tarh_shalvar")
+    results["skirt_pants"]   = _safe_predict(predict_class, img, "skirt_pants", MODELS["skirt_pants"], MODEL_CONFIGS["skirt_pants"][1], 300, name="skirt_pants")
 
 # =============================
 #  Body Type Prediction
@@ -146,7 +139,6 @@ def get_man_body_type(img_path: str) -> dict:
     response["data"]["body_type"] = body_type
     return response
 
-
 # =============================
 #  Utilities
 # =============================
@@ -154,13 +146,12 @@ def get_man_body_type(img_path: str) -> dict:
 def _safe_predict(func, *args, name=None, **kwargs):
     """Wrapper for safe prediction with logging."""
     try:
-        result = func(*args, **kwargs)
+        result = func(*args, **kwargs)  # Call func without passing name
         model_logger.info(f"{name} prediction result: {result}")
         return result
     except Exception as e:
         model_logger.error(f"{name} prediction failed: {e}")
         return None
-
 
 def _error_response(code, message, extra=None):
     """Unified error response builder."""
@@ -168,7 +159,6 @@ def _error_response(code, message, extra=None):
     if extra:
         err.update(extra)
     return {"ok": False, "data": None, "error": err}
-
 
 # =============================
 #  Testing Helpers
