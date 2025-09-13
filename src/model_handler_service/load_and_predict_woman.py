@@ -7,7 +7,7 @@ from model_handler_service.core.loaders import load_model, predict_class, yolo_p
 from model_handler_service.core.processing import preprocess_image_for_bodytype
 from model_handler_service.core.validations import validate_human_image
 from model_handler_service.core.logger import model_logger
-from model_handler_service.color import get_color_tone
+from model_handler_service.color import detect_clothing, get_color_tone
 from model_handler_service.core.config import config
 import torch
 
@@ -143,6 +143,21 @@ def process_woman_clothing_image(image_path):
             "validation_errors": clothing_validation_errors
         }
         return response
+    # Preliminary clothing detection using validations/clothes/detect_clothes.pt
+    try:
+        detections = detect_clothing(image_path)
+        if not detections:
+            model_logger.error("No clothing detected by YOLO validations model. Returning error response.")
+            response["ok"] = False
+            response["data"] = None
+            response["error"] = {
+                "code": "NO_CLOTHING_DETECTED",
+                "message": "No clothing detected in the image (YOLO validations model found nothing)"
+            }
+            return response
+    except Exception as e:
+        model_logger.error(f"Validations YOLO detection failed: {e}")
+
 
     from model_handler_service.core.logger import model_logger
     model_logger.info(f"Processing image: {image_path}")
